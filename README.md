@@ -1,6 +1,6 @@
 # @polyn/async-events
 
-An async event emitter for NodeJS with support for emitting events (not waiting for subscriptions to be satisfied), publishing events (waiting for subscriptions to be satisfied), and delivering events (waiting for subscriptions to acknowledge receipt).
+An async event emitter for NodeJS with support for emitting events (not waiting for subscriptions to be satisfied), publishing events (waiting for subscriptions to be satisfied), delivering events (waiting for subscriptions to acknowledge receipt), and executing events (waiting for subscriptions to be satisfied and rejecting if any reject).
 
 Also extends NodeJS' events package with a [WildcardEmitter](#wildcardemitter) which adds support for namespaces (i.e. wildcard listeners), and to listen for events that have no subscribers.
 
@@ -160,6 +160,30 @@ logger.subscribe('info', (event, meta) => {
   //   ]
   // }
 })()
+```
+
+### Executing a Topic
+
+If your publisher wants to ensure all subscribers succeed, it might be best to use
+`execute` rather than `publish`
+
+```JavaScript
+const { Topic } = require('@polyn/async-events')
+
+const topic = new Topic({ topic: 'logger' })
+
+// subscribe to an event
+topic.subscribe('user_login', (event, meta) => {
+  // do thing 1
+})
+
+// another event subscription
+topic.subscribe('user_login', (event, meta) => {
+  // break
+  throw new Error
+})
+
+await topic.execute('info', 'hello world').catch(err => console.log('Not all subscribers resolved!'))
 ```
 
 ### Emitting to a Topic
