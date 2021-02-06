@@ -198,6 +198,52 @@ module.exports = (test, dependencies) => {
         })
       },
     },
+    'when I exec to a topic and one of the subscriptions fails': {
+      given: async () => {
+        const topic = new Topic({ topic: String(random()) })
+        const eventName = String(random())
+        const expected = []
+        const events = []
+        const handler = (success) => {
+          expected.push(success)
+          return (event, meta) => new Promise((resolve, reject) => {
+            setTimeout(() => {
+              if (success) {
+                events.push({ event, meta })
+                return resolve(true)
+              }
+
+              reject(new Error('BOOM!'))
+            }, 5)
+          })
+        }
+        const subscriptions = [
+          await topic.subscribe(eventName, handler(false)),
+          await topic.subscribe(eventName, handler(true)),
+          await topic.subscribe(eventName, handler(false)),
+          await topic.subscribe(eventName, handler(true)),
+        ]
+
+        return { topic, eventName, expected, events, subscriptions }
+      },
+      when: async ({ topic, eventName, expected, events, subscriptions }) => {
+        const publishResult = await topic.execute(eventName, random())
+
+        return {
+          expected,
+          topic,
+          eventName,
+          events,
+          subscriptions,
+          publishResult,
+        }
+      },
+      'it should reject the promise because at least one subscriber failed': (expect) => (err, actual) => {
+        expect(err).to.not.be.null
+        expect(actual).to.be.undefined
+        expect(err.message).to.equal('subscriber failed')
+      },
+    },
     'when I subscribe to multiple events in one call, and then publish to that topic': {
       given: async () => {
         const topic = new Topic({ topic: String(random()) })

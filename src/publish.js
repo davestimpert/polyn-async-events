@@ -159,6 +159,27 @@ module.exports = {
         })
     }
 
-    return { publish, emit, deliver }
+    /**
+     * Emits a topic event to all subscribers, and waits for each subscription
+     * to complete before returning a response. Same as publish but rejects if
+     * any subscribers reject
+     * @param event {string} - the name of the event being published
+     * @param body {any?} - the payload to send to subscribers, if applicable
+     * @param meta {object?} - metadata to include with the event metadata
+     * @returns {Promise<number>} - the number of subscriptions the topic was emitted to
+     */
+    const execute = (event, body, meta) => publish(event, body, meta)
+      .then(publishResult => {
+        // check for any rejections
+        for (const result of publishResult.results) {
+          if (result.status === 'rejected') {
+            const error = new Error('subscriber failed')
+            throw error
+          }
+        }
+        return publishResult
+      })
+
+    return { publish, emit, deliver, execute }
   },
 }

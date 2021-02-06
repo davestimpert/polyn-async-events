@@ -24,13 +24,14 @@ module.exports = {
       const options = new TopicOptions(pubsubOptions)
 
       const repo = options.repo || TopicMemoryRepo(options.topic)
-      const { publish, emit, deliver } = Publisher(options.topic, repo, options.timeout)
+      const { publish, emit, deliver, execute } = Publisher(options.topic, repo, options.timeout)
 
       return {
         name: options.topic,
         publish,
         emit,
         deliver,
+        execute,
         subscribe: repo.subscribe,
         unsubscribe: repo.unsubscribe,
         // below are undocumented and subject to change or deprecation
