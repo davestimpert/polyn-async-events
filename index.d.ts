@@ -52,6 +52,7 @@ interface ITopicOptions {
 export interface ITopic {
   name: string;
   publish (name: string, body: any, meta?: any): Promise<IEventOutput>;
+  execute (name: string, body: any, meta?: any): Promise<IEventOutput>;
   emit (name: string, body: any, meta?: any): Promise<IEventOutput>;
   subscribe (names: string | string[], receiver: IReceiver): Promise<ISubscriptionResult|ISubscriptionResult[]>;
   unsubscribe (id: string): Promise<boolean>;
@@ -61,6 +62,7 @@ declare class Topic implements ITopic {
   constructor (options: ITopicOptions);
   name: string;
   publish (name: string, body: any, meta?: any): Promise<IEventOutput>;
+  execute (name: string, body: any, meta?: any): Promise<IEventOutput>;
   emit (name: string, body: any, meta?: any): Promise<IEventOutput>;
   subscribe (names: string | string[], receiver: IReceiver): Promise<ISubscriptionResult|ISubscriptionResult[]>;
   unsubscribe (id: string): Promise<boolean>;
